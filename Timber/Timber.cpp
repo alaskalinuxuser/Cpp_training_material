@@ -22,19 +22,18 @@ int main()
 
     while (window.isOpen())
     {
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-		{
-			// left key is pressed: move our character
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+			// Escape key is pressed: Exit the window.
 			window.close();
 		}
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
-		// right mouse button is pressed: exit
+			// right mouse button is pressed: exit
 			window.close();
 		}
+		
         sf::Event event;
-        while (window.pollEvent(event))
-        {
+        while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
         }
