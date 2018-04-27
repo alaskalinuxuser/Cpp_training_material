@@ -1,6 +1,13 @@
 #include <SFML/Graphics.hpp>
 #include <sstream>
 
+// Declare the function...
+void updateBranches(int seed);
+const int NUM_BRANCHES = 6;
+sf::Sprite branches[NUM_BRANCHES];
+enum class sideClass { LEFT, RIGHT, NONE };
+sideClass branchPositions[NUM_BRANCHES];
+
 int main()
 {
 	int sWidth = 1024;
@@ -23,7 +30,7 @@ int main()
     textureTree.loadFromFile("graphics/tree.png");
     sf::Sprite spriteTree;
     spriteTree.setTexture(textureTree);
-    spriteTree.setPosition(sWidth / 2.0f,0);
+    spriteTree.setPosition(sWidth / 2.0f - 150,0);
     
     // Add some clouds
     sf::Texture textureCloud;
@@ -84,16 +91,29 @@ int main()
     timeBar.setSize(sf::Vector2f(timeBarStartWidth,timeBarHeight));
     timeBar.setFillColor(sf::Color::Blue);
     timeBar.setPosition(sWidth / 2.0f - (timeBarStartWidth / 2.0f),sHeight - 45);
-    
+    // Time bar time calculations.
     sf::Time gameTime;
     float timeRemains = 6.0f;
     float widthPerSecond = timeBarStartWidth / timeRemains;
+    
+    // Add branches.
+    sf::Texture textureBranch;
+    textureBranch.loadFromFile("graphics/branch.png");
+    // For loop to set up branches.
+    for (int i = 0; i < NUM_BRANCHES; i++) {
+		branches[i].setTexture(textureBranch);
+		branches[i].setPosition(-2000,2000); // Way off screen.
+		branches[i].setOrigin(220,20); // The center of branch.png
+	}
     
     // Time control
     sf::Clock clock;
     
     // Pause the game
     bool gamePaused = true;
+    
+    // Code to just randomly display the branches.
+     updateBranches(1); updateBranches(2); updateBranches(3); updateBranches(4); updateBranches(5);
 
     while (window.isOpen())
     {
@@ -147,7 +167,7 @@ int main()
 				beeSpeed = ((rand() % 200) + 200);
 				// Now set the bee's starting position.
 				srand((int)time(0) * 10);
-				float height = ((rand() % 700) + 100);
+				float height = ((rand() % (sHeight/2)) + 200);
 				spriteBee.setPosition(-100,height); //off screen on left.
 				beeActive = true; // Make the bee active, so only runs once.
 			} else {
@@ -236,9 +256,38 @@ int main()
 			}
 		}
 		
+		// Update the score.
 		std::stringstream ss;
 		ss << "Score = " << scoreInt;
 		scoreText.setString(ss.str());
+		
+		// update the branches.
+			for (int i = 0; i < NUM_BRANCHES; i++)
+			{
+
+				float height = i * 150;
+
+				if (branchPositions[i] == sideClass::LEFT)
+				{
+					// Move the sprite to the left side
+					branches[i].setPosition(sWidth / 2.0f - 370, height);
+					// Flip the sprite round the other way
+					branches[i].setRotation(180);
+				}
+				else if (branchPositions[i] == sideClass::RIGHT)
+				{
+					// Move the sprite to the right side
+					branches[i].setPosition(sWidth / 2 + 370, height);
+					// Set the sprite rotation to normal
+					branches[i].setRotation(0);
+
+				}
+				else
+				{
+					// Hide the branch
+					branches[i].setPosition(3000, height);
+				}
+			}
 		
 		window.clear();
 		window.draw(spriteBackground);
@@ -246,6 +295,12 @@ int main()
 		window.draw(spriteCloudTwo);
 		window.draw(spriteCloudThree);
 		window.draw(spriteTree);
+		
+		// Draw all the branches.
+		for (int b = 0; b < NUM_BRANCHES; b++) {
+			window.draw(branches[b]);
+		}
+		
 		window.draw(spriteBee);
 		window.draw(scoreText);
 		window.draw(timeBar);
@@ -260,3 +315,35 @@ int main()
 
     return 0;
 }
+
+
+// The branches function.
+void updateBranches(int seed)
+{
+	// Move all the branches down one place
+	for (int j = NUM_BRANCHES - 1; j > 0; j--) {
+		branchPositions[j] = branchPositions[j - 1];
+	}
+
+	// Spawn a new branch at position 0
+	// LEFT, RIGHT or NONE
+	srand((int)time(0) + seed);
+	int r = (rand() % 5);
+
+	switch (r) {
+	case 0:
+		branchPositions[0] = sideClass::LEFT;
+		break;
+
+	case 1:
+		branchPositions[0] = sideClass::RIGHT;
+		break;
+
+	default:
+		branchPositions[0] = sideClass::NONE;
+		break;
+	}
+
+
+}
+
