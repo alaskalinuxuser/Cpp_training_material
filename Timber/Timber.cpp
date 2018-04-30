@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <sstream>
+#include <SFML/Audio.hpp>
 
 // Declare the function...
 void updateBranches(int seed);
@@ -31,6 +32,15 @@ int main()
     sf::Sprite spriteTree;
     spriteTree.setTexture(textureTree);
     spriteTree.setPosition(sWidth / 2.0f - 150,0);
+
+    // Add our bee
+    sf::Texture textureBee;
+    textureBee.loadFromFile("graphics/insect.png");
+    sf::Sprite spriteBee;
+    spriteBee.setTexture(textureBee);
+    spriteBee.setPosition(sWidth - 100,600);
+    bool beeActive = false;
+    float beeSpeed = 0.0f;
     
     // Add some clouds
     sf::Texture textureCloud;
@@ -51,14 +61,23 @@ int main()
     float cloudTwoSpeed = 0.0f;
     float cloudThreeSpeed = 0.0f;
     
-    // Add our bee
-    sf::Texture textureBee;
-    textureBee.loadFromFile("graphics/insect.png");
-    sf::Sprite spriteBee;
-    spriteBee.setTexture(textureBee);
-    spriteBee.setPosition(sWidth - 100,600);
-    bool beeActive = false;
-    float beeSpeed = 0.0f;
+    // Time control
+    sf::Clock clock;
+    
+    // Add a time bar
+    sf::RectangleShape timeBar;
+    float timeBarStartWidth = 400;
+    float timeBarHeight = 40;
+    timeBar.setSize(sf::Vector2f(timeBarStartWidth,timeBarHeight));
+    timeBar.setFillColor(sf::Color::Blue);
+    timeBar.setPosition(sWidth / 2.0f - (timeBarStartWidth / 2.0f), 25);
+    // Time bar time calculations.
+    sf::Time gameTime;
+    float timeRemains = 6.0f;
+    float widthPerSecond = timeBarStartWidth / timeRemains;
+    
+    // Pause the game
+    bool gamePaused = true;    
     
     // Add a font.
     sf::Font font;
@@ -82,19 +101,7 @@ int main()
     scoreText.setCharacterSize(40);
     scoreText.setColor(sf::Color::White);
     scoreText.setFont(font);
-    scoreText.setPosition(10,10);
-    
-    // Add a time bar
-    sf::RectangleShape timeBar;
-    float timeBarStartWidth = 400;
-    float timeBarHeight = 40;
-    timeBar.setSize(sf::Vector2f(timeBarStartWidth,timeBarHeight));
-    timeBar.setFillColor(sf::Color::Blue);
-    timeBar.setPosition(sWidth / 2.0f - (timeBarStartWidth / 2.0f),sHeight - 45);
-    // Time bar time calculations.
-    sf::Time gameTime;
-    float timeRemains = 6.0f;
-    float widthPerSecond = timeBarStartWidth / timeRemains;
+    scoreText.setPosition(10,10);    
     
     // Add branches.
     sf::Texture textureBranch;
@@ -106,17 +113,84 @@ int main()
 		branches[i].setOrigin(220,20); // The center of branch.png
 	}
     
-    // Time control
-    sf::Clock clock;
-    
-    // Pause the game
-    bool gamePaused = true;
-    
     // Code to just randomly display the branches.
-     updateBranches(1); updateBranches(2); updateBranches(3); updateBranches(4); updateBranches(5);
+    // updateBranches(1); updateBranches(2); updateBranches(3); updateBranches(4); updateBranches(5);    
+    
+    // Add our player
+    sf::Texture texturePlayerR;
+    texturePlayerR.loadFromFile("graphics/player.png");
+        sf::Texture texturePlayerL;
+		texturePlayerL.loadFromFile("graphics/playerl.png");
+    sf::Sprite spritePlayer;
+    spritePlayer.setTexture(texturePlayerR);
+    spritePlayer.setOrigin({ spritePlayer.getLocalBounds().width, 0 });
+    
+    float playerLeft = (sWidth / 2.0f - 175);
+    float playerRight = (sWidth / 2.0f + 325);
+    
+    spritePlayer.setPosition(playerRight,600);
+    sideClass playerSide = sideClass::RIGHT;    
+    
+    // Add our tombstone
+    sf::Texture textureGrave;
+    textureGrave.loadFromFile("graphics/rip.png");
+    sf::Sprite spriteGrave;
+    spriteGrave.setTexture(textureGrave);
+    spriteGrave.setPosition(playerLeft,650);    
+        
+    // Add our ax
+    sf::Texture textureAxR;
+    textureAxR.loadFromFile("graphics/axe.png");
+        sf::Texture textureAxL;
+		textureAxL.loadFromFile("graphics/axel.png");
+    sf::Sprite spriteAx;
+    spriteAx.setTexture(textureAxR);
+    spriteAx.setOrigin({ spriteAx.getLocalBounds().width, 0 });
+    
+	const float AXE_POSITION_LEFT = (sWidth / 2.0f - 43);
+	const float AXE_POSITION_RIGHT = (sWidth / 2.0f + 200);
+    
+    spriteAx.setPosition(-2000,710);        
+        
+    // Add our log
+    sf::Texture textureLog;
+    textureLog.loadFromFile("graphics/log.png");
+    sf::Sprite spriteLog;
+    spriteLog.setTexture(textureLog);
+    spriteLog.setPosition(-2000,sHeight - 120);
+    bool logActive = false;
+    float logSpeedX = 1000;
+    float logSpeedY = -1500;
 
-    while (window.isOpen())
-    {
+    // Accept keyboard input.
+    bool acceptInput = false;    
+    
+	// Prepare the sound
+	sf::SoundBuffer chopBuffer;
+	chopBuffer.loadFromFile("sound/chop.wav");
+	sf::Sound chop;
+	chop.setBuffer(chopBuffer);
+
+	sf::SoundBuffer deathBuffer;
+	deathBuffer.loadFromFile("sound/death.wav");
+	sf::Sound death;
+	death.setBuffer(deathBuffer);
+
+	// Out of time
+	sf::SoundBuffer ootBuffer;
+	ootBuffer.loadFromFile("sound/time.wav");
+	sf::Sound outOfTime;
+	outOfTime.setBuffer(ootBuffer);
+
+    while (window.isOpen()) {
+		
+		
+		/* 
+		 * 
+		 *  Detect input.
+		 * 
+		 */
+		 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
 			// Escape key is pressed: Exit the window.
 			window.close();
@@ -128,9 +202,87 @@ int main()
 			scoreInt = 0;
 			timeRemains = 6.0f;
 			gamePaused=false;
-				
+			
+			// Make it so there are no more branches.
+			for (int i = 0; i < NUM_BRANCHES; i++){
+				branchPositions[i] = sideClass::NONE;
+			}
+			
+			// Put the player on the right side and get rid of tombstone.
+			spritePlayer.setPosition(playerRight,600);
+			spriteGrave.setPosition(-2000,650);
+			
+			// Enable keyboard input.
+			acceptInput = true;
 		}
 
+		if (acceptInput) {
+			
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+				// Make sure the player is on the Left
+				playerSide = sideClass::LEFT;
+
+				scoreInt++;
+
+				// Add to the amount of time remaining
+				timeRemains += (2 / scoreInt) + .15;
+
+				spriteAx.setPosition(AXE_POSITION_LEFT,
+					spriteAx.getPosition().y);
+				spriteAx.setTexture(textureAxL);
+
+				spritePlayer.setPosition(playerLeft, 600);
+				spritePlayer.setTexture(texturePlayerL);
+				
+				// update the branches
+				updateBranches(scoreInt);
+
+				// set the log flying to the left
+				spriteLog.setPosition(sWidth / 2.0f - 150,sHeight - 120);
+				logSpeedX = 5000;
+				logActive = true;
+
+
+				acceptInput = false;
+
+				// Play a chop sound
+				chop.play();
+			}
+			
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+				
+				// Make sure the player is on the right
+				playerSide = sideClass::RIGHT;
+
+				scoreInt++;
+
+				// Add to the amount of time remaining
+				timeRemains += (2 / scoreInt) + .15;
+
+				spriteAx.setPosition(AXE_POSITION_RIGHT,
+					spriteAx.getPosition().y);
+				spriteAx.setTexture(textureAxR);
+
+				spritePlayer.setPosition(playerRight, 600);
+				spritePlayer.setTexture(texturePlayerR);
+
+				// update the branches
+				updateBranches(scoreInt);
+
+				// set the log flying to the left
+				spriteLog.setPosition(sWidth / 2.0f - 150,sHeight - 120);
+				logSpeedX = -5000;
+				logActive = true;
+
+
+				acceptInput = false;
+
+				// Play a chop sound
+				chop.play();
+			}
+			
+		}
+		
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
 			// right mouse button is pressed: exit
 			window.close();
@@ -138,9 +290,24 @@ int main()
 		
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed)
-                window.close();
+			
+			if (event.type == sf::Event::KeyReleased && !gamePaused) {
+				// Listen for key presses again
+				acceptInput = true;
+
+				// hide the axe
+				spriteAx.setPosition(2000,
+					spriteAx.getPosition().y);
+			} else if (event.type == sf::Event::Closed) {
+					window.close();
+                }
         }
+        
+        /* 
+		 * 
+		 *  Updating the scene.
+		 * 
+		 */
         
         if (!gamePaused) {
 			sf::Time dt = clock.restart();
@@ -151,7 +318,8 @@ int main()
 			
 			if (timeRemains <= 0.0f) {
 				gamePaused=true;
-				startText.setString("Time Over! Press Enter to play again!");
+				startText.setString("Time's up! Press Enter to play again!");
+				outOfTime.play();
 				
 				sf::FloatRect textRect = startText.getLocalBounds();
 				startText.setOrigin(textRect.left + textRect.width / 2.0f,
@@ -254,7 +422,7 @@ int main()
 				cloudThreeActive = false;
 				// This will then call the setup for the cloud again.
 			}
-		}
+	
 		
 		// Update the score.
 		std::stringstream ss;
@@ -262,8 +430,7 @@ int main()
 		scoreText.setString(ss.str());
 		
 		// update the branches.
-			for (int i = 0; i < NUM_BRANCHES; i++)
-			{
+			for (int i = 0; i < NUM_BRANCHES; i++) {
 
 				float height = i * 150;
 
@@ -288,6 +455,68 @@ int main()
 					branches[i].setPosition(3000, height);
 				}
 			}
+			
+			// Handle the flying log				
+			if (logActive) {
+
+				spriteLog.setPosition(
+					spriteLog.getPosition().x + (logSpeedX * dt.asSeconds()),
+					spriteLog.getPosition().y + (logSpeedY * dt.asSeconds()));
+
+				// Has the Log reached the right hand edge of the screen?
+				if (spriteLog.getPosition().x < -100 ||
+					spriteLog.getPosition().x > 2000)
+				{
+					// Set it up ready to be a whole new Log next frame
+					logActive = false;
+					spriteLog.setPosition(sWidth / 2.0f - 150,sHeight - 120);
+				}
+			}
+			
+			// Handle the squished player.
+			if (branchPositions[5] == playerSide)
+			{
+				// death
+				gamePaused = true;
+				acceptInput = false;
+
+				// Draw the gravestone
+				if (playerSide == sideClass::LEFT) {
+					spriteGrave.setPosition(playerLeft - 100, 650);
+				} else {
+					spriteGrave.setPosition(playerRight - 100, 650);
+				}
+				
+				// hide the player and axe.
+				spritePlayer.setPosition(2000, 660);
+				spriteAx.setPosition(2000, 710);
+
+				// Change the text of the message
+				startText.setString("YOU'VE BEEN SQUISHED!!");
+
+				// Center it on the screen
+				sf::FloatRect textRect = startText.getLocalBounds();
+
+				startText.setOrigin(textRect.left +
+					textRect.width / 2.0f,
+					textRect.top + textRect.height / 2.0f);
+
+				startText.setPosition(sWidth / 2.0f,
+					sHeight / 2.0f);
+
+				// Play the death sound
+				death.play();
+			}
+
+			
+			
+		}
+		
+		/* 
+		 * 
+		 *  Draw the scene.
+		 * 
+		 */		
 		
 		window.clear();
 		window.draw(spriteBackground);
@@ -300,10 +529,13 @@ int main()
 		for (int b = 0; b < NUM_BRANCHES; b++) {
 			window.draw(branches[b]);
 		}
-		
+		window.draw(spritePlayer);
+		window.draw(spriteLog);
+		window.draw(spriteAx);
+		window.draw(spriteGrave);
 		window.draw(spriteBee);
-		window.draw(scoreText);
 		window.draw(timeBar);
+		window.draw(scoreText);
 		
 		if (gamePaused) {
 			window.draw(startText);
