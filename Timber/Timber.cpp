@@ -136,7 +136,7 @@ int main()
     textureGrave.loadFromFile("graphics/rip.png");
     sf::Sprite spriteGrave;
     spriteGrave.setTexture(textureGrave);
-    spriteGrave.setPosition(playerLeft,650);    
+    spriteGrave.setPosition(-2000,650);    
         
     // Add our ax
     sf::Texture textureAxR;
