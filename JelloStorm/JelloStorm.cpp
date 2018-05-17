@@ -2,6 +2,7 @@
 #include <sstream>
 #include <SFML/Audio.hpp>
 #include <Player.h>
+#include <JelloStorm.h>
 
 // Declare the functions....
 
@@ -32,17 +33,6 @@ int main() {
 		
 	// Create a an SFML View for the main action
 	View mainView(FloatRect(0, 0, resolution.x, resolution.y));
-	
-	// Create a texture for our background and load it.
-    Texture textureBackground;
-    textureBackground.loadFromFile("graphics/background.png");
-    
-    // Now create a sprite and attach our background texture to it.
-    Sprite spriteBackground;
-    spriteBackground.setTexture(textureBackground);
-    
-    // Give the spritebackground a position.
-    spriteBackground.setPosition(0,0);
 
 	// Time control
     Clock clock;
@@ -60,6 +50,11 @@ int main() {
 	
 	// Create an arena, or game area.
 	IntRect arena;
+	
+	// Create our background tiles
+	VertexArray tileBackground;
+	Texture textureBackground;
+	textureBackground.loadFromFile("graphics/background_sheet.png");
 
     while (window.isOpen()) {
 		
@@ -201,7 +196,7 @@ int main() {
 				arena.top = 0;
 
 				// We will modify this line of code later
-				int tileSize = 50;
+				int tileSize = createBackground(tileBackground, arena);
 
 				// Spawn the player in the middle of the arena
 				player.spawn(arena, resolution, tileSize);
@@ -259,6 +254,8 @@ int main() {
 			// set the mainView to be displayed in the window
 			// And draw everything related to it
 			window.setView(mainView);
+			
+			window.draw(tileBackground, &textureBackground);
 
 			// Draw the player
 			window.draw(player.getSprite());
@@ -272,7 +269,6 @@ int main() {
 		if (state == State::PAUSED)
 		{
 			window.clear();
-			window.draw(spriteBackground);
 		}
 
 		if (state == State::GAME_OVER)
