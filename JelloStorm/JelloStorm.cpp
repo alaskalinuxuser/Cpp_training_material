@@ -3,6 +3,7 @@
 #include <SFML/Audio.hpp>
 #include <Player.h>
 #include <JelloStorm.h>
+#include <TextureHolder.h>
 
 // Declare the functions....
 
@@ -10,6 +11,8 @@ using namespace sf;
 
 // The main process....
 int main() {
+	
+	TextureHolder holder;
 	
 	// What is the game state?
 	enum class State {
@@ -53,8 +56,12 @@ int main() {
 	
 	// Create our background tiles
 	VertexArray tileBackground;
-	Texture textureBackground;
-	textureBackground.loadFromFile("graphics/background_sheet.png");
+	Texture textureBackground = TextureHolder::GetTexture("graphics/background_sheet.png");
+
+	// Time to make jello!
+	int numJellos;
+	int numJellosAlive;
+	Jello* jellos = nullptr;
 
     while (window.isOpen()) {
 		
@@ -201,6 +208,14 @@ int main() {
 				// Spawn the player in the middle of the arena
 				player.spawn(arena, resolution, tileSize);
 				
+				// Make some Jello!
+				numJellos = 10;
+
+				// Delete the previously allocated memory (if it exists)
+				delete[] jellos;
+				jellos = createHorde(numJellos, arena);
+				numJellosAlive = numJellos;
+				
 				// Reset the clock so there isn't a frame jump
 				clock.restart();
 			}
@@ -237,6 +252,16 @@ int main() {
 
 			// Make the view centre around the player				
 			mainView.setCenter(player.getCenter());
+			
+			// Loop through each Jello and update them
+			for (int i = 0; i < numJellos; i++)
+			{
+				if (jellos[i].isAlive())
+				{
+					jellos[i].update(dt.asSeconds(), playerPosition);
+				}
+			}
+			
 		}// End updating the scene
 		
 		
@@ -256,6 +281,12 @@ int main() {
 			window.setView(mainView);
 			
 			window.draw(tileBackground, &textureBackground);
+			
+			// Draw the Jello!
+			for (int i = 0; i < numJellos; i++)
+			{
+				window.draw(jellos[i].getSprite());
+			}
 
 			// Draw the player
 			window.draw(player.getSprite());
@@ -263,22 +294,25 @@ int main() {
 
 		if (state == State::LEVELING_UP)
 		{
-			window.clear();
+			//window.clear();
 		}
 
 		if (state == State::PAUSED)
 		{
-			window.clear();
+			//window.clear();
 		}
 
 		if (state == State::GAME_OVER)
 		{
-			window.clear();
+			//window.clear();
 		}
 
 		window.display();
 		
     }
-
+	
+	// Delete the previously allocated memory (if it exists)
+	delete[] jellos; // Clean up is always a good idea.
+    
     return 0;
 }

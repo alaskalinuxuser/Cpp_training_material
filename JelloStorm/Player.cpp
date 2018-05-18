@@ -1,5 +1,6 @@
 #include <sstream>
 #include <Player.h>
+#include <TextureHolder.h>
 using namespace sf;
 
 using namespace sf;
@@ -13,8 +14,8 @@ Player::Player()
 	m_MaxHealth = START_HEALTH;
 	
 	// Give the player graphics.
-	m_Texture.loadFromFile("graphics/archer.png");
-	m_Sprite.setTexture(m_Texture);
+	m_Sprite = Sprite(TextureHolder::GetTexture(
+			"graphics/archer.png"));
 	
 	// Set the center of the sprite so it can rotate.
 	m_Sprite.setOrigin(25, 25);
