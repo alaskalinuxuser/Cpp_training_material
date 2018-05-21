@@ -5,6 +5,7 @@
 #include <JelloStorm.h>
 #include <TextureHolder.h>
 #include <Arrow.h>
+#include <Pickup.h>
 #include <cmath>
 
 // Declare the functions....
@@ -74,7 +75,22 @@ int main() {
 	float fireRate = 1;
 	// When was the fire button last pressed?
 	Time lastPressed;
+	
+	// Hide the mouse pointer and replace it with crosshair
+	window.setMouseCursorVisible(false);
+	Sprite spriteCrosshair;
+	Texture textureCrosshair = TextureHolder::GetTexture("graphics/crosshair.png");
+	spriteCrosshair.setTexture(textureCrosshair);
+	spriteCrosshair.setOrigin(25, 25);
 
+	// Create a couple of pickups
+	Pickup healthPickup(1);
+	Pickup ammoPickup(2);
+	
+	// About the game
+	int score = 0;
+	int hiScore = 0;
+	
     while (window.isOpen()) {
 		
 		
@@ -268,6 +284,10 @@ int main() {
 				// Spawn the player in the middle of the arena
 				player.spawn(arena, resolution, tileSize);
 				
+				// Configure the pick-ups
+				healthPickup.setArena(arena);
+				ammoPickup.setArena(arena);
+
 				// Make some Jello!
 				numJellos = 10;
 
@@ -303,6 +323,9 @@ int main() {
 			// Convert mouse position to world coordinates of mainView
 			mouseWorldPosition = window.mapPixelToCoords(
 				Mouse::getPosition(), mainView);
+				
+			// Set the crosshair to the mouse world location
+			spriteCrosshair.setPosition(mouseWorldPosition);
 
 			// Update the player
 			player.update(dtAsSeconds, Mouse::getPosition());
@@ -329,6 +352,84 @@ int main() {
 				{
 					arrows[i].update(dtAsSeconds);
 				}
+			}
+			
+			// Update the pickups
+			healthPickup.update(dtAsSeconds);
+			ammoPickup.update(dtAsSeconds);
+			
+			// Collision detections
+			// Have any jello been hit with an arrow?
+			for (int i = 0; i < 100; i++)
+			{
+				for (int j = 0; j < numJellos; j++)
+				{
+					if (arrows[i].isInFlight() &&
+						jellos[j].isAlive())
+					{
+						if (arrows[i].getPosition().intersects
+							(jellos[j].getPosition()))
+						{
+							// Stop the bullet
+							arrows[i].stop();
+
+							// Register the hit and see if it was a kill
+							if (jellos[j].hit()) {
+								// Not just a hit but a kill too
+								score += 10;
+								if (score >= hiScore)
+								{
+									hiScore = score;
+								}
+
+								numJellosAlive--;
+
+								// When all the zombies are dead (again)
+								if (numJellosAlive == 0) {
+									state = State::LEVELING_UP;
+								}
+							}
+
+						}
+					}
+
+				}
+			}// End jello been hit by an arrow.
+
+			 // Have any jellos touched the archer?			
+			for (int i = 0; i < numJellos; i++)
+			{
+				if (player.getPosition().intersects
+					(jellos[i].getPosition()) && jellos[i].isAlive())
+				{
+
+					if (player.hit(gameTimeTotal))
+					{
+						// More here later
+					}
+
+					if (player.getHealth() <= 0)
+					{
+						state = State::GAME_OVER;
+
+					}
+				}
+			}// End player touched
+
+			 // Has the player touched health pickup
+			if (player.getPosition().intersects
+				(healthPickup.getPosition()) && healthPickup.isSpawned())
+			{
+				player.increaseHealthLevel(healthPickup.gotIt());
+
+			}
+
+			// Has the player touched ammo pickup
+			if (player.getPosition().intersects
+				(ammoPickup.getPosition()) && ammoPickup.isSpawned())
+			{
+				arrowsSpare += ammoPickup.gotIt();
+
 			}
 			
 		}// End updating the scene
@@ -368,6 +469,19 @@ int main() {
 
 			// Draw the player
 			window.draw(player.getSprite());
+			
+			// Draw the pick-ups, if currently spawned
+			if (ammoPickup.isSpawned())
+			{
+				window.draw(ammoPickup.getSprite());
+			}
+			if (healthPickup.isSpawned())
+			{
+				window.draw(healthPickup.getSprite());
+			}
+			
+			//Draw the crosshair
+			window.draw(spriteCrosshair);
 		}
 
 		if (state == State::LEVELING_UP)

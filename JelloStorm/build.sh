@@ -19,11 +19,12 @@ g++ -I./  -Wall -Wextra -g -c -std=c++1z TextureHolder.cpp -o TextureHolder.o
 g++ -I./  -Wall -Wextra -g -c -std=c++1z Player.cpp -o Player.o
 g++ -I./  -Wall -Wextra -g -c -std=c++1z Arrow.cpp -o Arrow.o
 g++ -I./  -Wall -Wextra -g -c -std=c++1z Jello.cpp -o Jello.o
+g++ -I./  -Wall -Wextra -g -c -std=c++1z Pickup.cpp -o Pickup.o
 g++ -I./  -Wall -Wextra -g -c -std=c++1z CreateHorde.cpp -o CreateHorde.o
 g++ -I./  -Wall -Wextra -g -c -std=c++1z CreateBackground.cpp -o CreateBackground.o
 g++ -I./  -Wall -Wextra -g -c -std=c++1z JelloStorm.cpp -o JelloStorm.o
 
-g++ JelloStorm.o Player.o Jello.o CreateHorde.o CreateBackground.o TextureHolder.o Arrow.o -o JelloStorm-app -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+g++ JelloStorm.o Player.o Jello.o CreateHorde.o CreateBackground.o TextureHolder.o Arrow.o Pickup.o -o JelloStorm-app -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
 ./JelloStorm-app
 

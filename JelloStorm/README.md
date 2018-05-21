@@ -20,7 +20,7 @@ All of my work is licensed under the Apache2.0, however, some of the class artwo
 
 To build these games, you need libsfml installed on your Linux system. Then, in each game folder, run the ./build.sh file to build the source.
 
-#A note about the build.sh script
+# A note about the build.sh script
 
 std=c++1z is for the 2017 standard of C++.
 
@@ -35,10 +35,10 @@ My compiler version:
 	This is free software; see the source for copying conditions.  There is NO
 	warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-#Installation
+# Installation
 
 Pre-reqs: libsfml
 
-If you are reading this, then you have downloaded and extraxted the package already. All you must do now is:
+If you are reading this, then you have downloaded and extracted the package already. All you must do now is:
 
 $ ./build.sh
