@@ -1,7 +1,7 @@
 #include <sstream>
 #include <Player.h>
 #include <TextureHolder.h>
-using namespace sf;
+#include <cmath>
 
 using namespace sf;
 

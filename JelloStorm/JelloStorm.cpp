@@ -4,6 +4,8 @@
 #include <Player.h>
 #include <JelloStorm.h>
 #include <TextureHolder.h>
+#include <Arrow.h>
+#include <cmath>
 
 // Declare the functions....
 
@@ -62,6 +64,16 @@ int main() {
 	int numJellos;
 	int numJellosAlive;
 	Jello* jellos = nullptr;
+	
+	// 100 Arrows should do
+	Arrow arrows[100];
+	int currentArrow = 0;
+	int arrowsSpare = 24;
+	int arrowsInQuiver = 6;
+	int quiverSize = 6;
+	float fireRate = 1;
+	// When was the fire button last pressed?
+	Time lastPressed;
 
     while (window.isOpen()) {
 		
@@ -107,7 +119,27 @@ int main() {
 
 				if (state == State::PLAYING)
 				{
+					// Reloading
+					if (event.key.code == Keyboard::R)
+					{
+						if (arrowsSpare >= quiverSize)
+						{
+							// Plenty of bullets. Reload.
+							arrowsInQuiver = quiverSize;
+							arrowsSpare -= quiverSize;
+						}
+						else if (arrowsSpare > 0)
+						{
+							// Only few bullets left
+							arrowsInQuiver = arrowsSpare;
+							arrowsSpare = 0;
+						}
+						else
+						{
+							// play a sound...
+						}
 				}
+			}
 
 			}
 		}// End event polling
@@ -157,6 +189,34 @@ int main() {
 			{
 				player.stopRight();
 			}
+			
+			// Fire an arrow
+			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+			{
+
+				if (gameTimeTotal.asMilliseconds()
+					- lastPressed.asMilliseconds()
+					> 1000 / fireRate && arrowsInQuiver > 0)
+				{
+
+					// Pass the centre of the player 
+					// and the centre of the cross-hair
+					// to the shoot function
+					arrows[currentArrow].shoot(
+						player.getCenter().x, player.getCenter().y,
+						mouseWorldPosition.x, mouseWorldPosition.y);
+
+					currentArrow++;
+					if (currentArrow > 99)
+					{
+						currentArrow = 0;
+					}
+					lastPressed = gameTimeTotal;
+
+					arrowsInQuiver--;
+				}
+
+			}// End fire an arrow.
 
 		}// End WASD while playing
 
@@ -262,6 +322,15 @@ int main() {
 				}
 			}
 			
+			// Loop through any arrows that are in flight.
+			for (int i = 0; i < 100; i++)
+			{
+				if (arrows[i].isInFlight())
+				{
+					arrows[i].update(dtAsSeconds);
+				}
+			}
+			
 		}// End updating the scene
 		
 		
@@ -286,6 +355,15 @@ int main() {
 			for (int i = 0; i < numJellos; i++)
 			{
 				window.draw(jellos[i].getSprite());
+			}
+			
+			// Draw the arrows.
+			for (int i = 0; i < 100; i++)
+			{
+				if (arrows[i].isInFlight())
+				{
+					window.draw(arrows[i].getShape());
+				}
 			}
 
 			// Draw the player
