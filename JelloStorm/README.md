@@ -29,7 +29,7 @@ If your compiler doesn't recognize the std=c++1z, you can try one of the above i
 If your compiler is newer, you could try std=c++17 as well.
 
 My compiler version:
-	alaskalinuxuser@alaskalinuxuser-OptiPlex-7010:~$ g++ --version
+	alaskalinuxuser@alaskalinuxuser-OptiPlex-7010:~$ g++ -version
 	g++ (Ubuntu 5.4.0-6ubuntu1~16.04.9) 5.4.0 20160609
 	Copyright (C) 2015 Free Software Foundation, Inc.
 	This is free software; see the source for copying conditions.  There is NO

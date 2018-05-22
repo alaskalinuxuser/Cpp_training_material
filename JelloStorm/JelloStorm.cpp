@@ -85,11 +85,114 @@ int main() {
 
 	// Create a couple of pickups
 	Pickup healthPickup(1);
-	Pickup ammoPickup(2);
+	Pickup arrowPickup(2);
 	
 	// About the game
 	int score = 0;
 	int hiScore = 0;
+	
+	// For the home/game over screen
+	Sprite spriteGameOver;
+	Texture textureGameOver = TextureHolder::GetTexture("graphics/background.png");
+	spriteGameOver.setTexture(textureGameOver);
+	spriteGameOver.setPosition(0, 0);
+
+	// Create a view for the HUD
+	View hudView(sf::FloatRect(0, 0, resolution.x, resolution.y));
+
+	// Create a sprite for the arrow icon
+	Sprite spriteArrowIcon;
+	Texture textureArrowIcon = TextureHolder::GetTexture("graphics/arrow_icon.png");
+	spriteArrowIcon.setTexture(textureArrowIcon);
+	spriteArrowIcon.setPosition(20, resolution.y - 100);
+
+	// Load the font
+	Font font;
+	font.loadFromFile("fonts/KOMIKAP_.ttf");
+
+	// Paused
+	Text pausedText;
+	pausedText.setFont(font);
+	pausedText.setCharacterSize(55);
+	pausedText.setColor(Color::White);
+	pausedText.setPosition(resolution.x/4, resolution.y/4);
+	pausedText.setString("Press Enter \nto continue");
+
+	// Game Over
+	Text gameOverText;
+	gameOverText.setFont(font);
+	gameOverText.setCharacterSize(55);
+	gameOverText.setColor(Color::White);
+	gameOverText.setPosition(resolution.x/4, resolution.y/4);
+	gameOverText.setString("Press Enter to play");
+
+	// Levelling up
+	Text levelUpText;
+	levelUpText.setFont(font);
+	levelUpText.setCharacterSize(35);
+	levelUpText.setColor(Color::White);
+	levelUpText.setPosition(150, 250);
+	std::stringstream levelUpStream;
+	levelUpStream <<
+		"1 - Increased rate of fire" <<
+		"\n2 - Increased clip size(next reload)" <<
+		"\n3 - Increased max health" <<
+		"\n4 - Increased run speed" <<
+		"\n5 - More and better health pickups" <<
+		"\n6 - More and better arrow pickups";
+	levelUpText.setString(levelUpStream.str());
+
+	// Arrow
+	Text arrowText;
+	arrowText.setFont(font);
+	arrowText.setCharacterSize(35);
+	arrowText.setColor(Color::White);
+	arrowText.setPosition(200, resolution.y - 100);
+
+	// Score
+	Text scoreText;
+	scoreText.setFont(font);
+	scoreText.setCharacterSize(35);
+	scoreText.setColor(Color::White);
+	scoreText.setPosition(20, 0);
+
+	// Hi Score
+	Text hiScoreText;
+	hiScoreText.setFont(font);
+	hiScoreText.setCharacterSize(35);
+	hiScoreText.setColor(Color::White);
+	hiScoreText.setPosition(resolution.x - 300, 0);
+	std::stringstream s;
+	s << "Hi Score:" << hiScore;
+	hiScoreText.setString(s.str());
+
+	// Jellos remaining
+	Text jellosRemainingText;
+	jellosRemainingText.setFont(font);
+	jellosRemainingText.setCharacterSize(35);
+	jellosRemainingText.setColor(Color::White);
+	jellosRemainingText.setPosition(resolution.x - 300, resolution.y - 100);
+	jellosRemainingText.setString("Jellos: 100");
+
+	// Wave number
+	int wave = 0;
+	Text waveNumberText;
+	waveNumberText.setFont(font);
+	waveNumberText.setCharacterSize(35);
+	waveNumberText.setColor(Color::White);
+	waveNumberText.setPosition(resolution.x - 300, resolution.y - 200);
+	waveNumberText.setString("Wave: 0");
+
+	// Health bar
+	RectangleShape healthBar;
+	healthBar.setFillColor(Color::Red);
+	healthBar.setPosition(450, resolution.y - 100);
+		
+	// When did we last update the HUD?
+	int framesSinceLastHUDUpdate = 0;
+
+	// How often (in frames) should we update the HUD
+	int fpsMeasurementFrameInterval = 1000;
 	
     while (window.isOpen()) {
 		
@@ -286,7 +389,7 @@ int main() {
 				
 				// Configure the pick-ups
 				healthPickup.setArena(arena);
-				ammoPickup.setArena(arena);
+				arrowPickup.setArena(arena);
 
 				// Make some Jello!
 				numJellos = 10;
@@ -356,7 +459,7 @@ int main() {
 			
 			// Update the pickups
 			healthPickup.update(dtAsSeconds);
-			ammoPickup.update(dtAsSeconds);
+			arrowPickup.update(dtAsSeconds);
 			
 			// Collision detections
 			// Have any jello been hit with an arrow?
@@ -424,13 +527,52 @@ int main() {
 
 			}
 
-			// Has the player touched ammo pickup
+			// Has the player touched arrow pickup
 			if (player.getPosition().intersects
-				(ammoPickup.getPosition()) && ammoPickup.isSpawned())
+				(arrowPickup.getPosition()) && arrowPickup.isSpawned())
 			{
-				arrowsSpare += ammoPickup.gotIt();
+				arrowsSpare += arrowPickup.gotIt();
 
 			}
+			
+			// size up the health bar
+			healthBar.setSize(Vector2f(player.getHealth() * 3, 70));
+
+			// Increment the number of frames since the last HUD calculation
+			framesSinceLastHUDUpdate++;
+			// Calculate FPS every fpsMeasurementFrameInterval frames
+			if (framesSinceLastHUDUpdate > fpsMeasurementFrameInterval)
+			{
+
+				// Update game HUD text
+				std::stringstream ssArrow;
+				std::stringstream ssScore;
+				std::stringstream ssHiScore;
+				std::stringstream ssWave;
+				std::stringstream ssJellosAlive;
+
+				// Update the arrow text
+				ssArrow << arrowsInQuiver << "/" << arrowsSpare;
+				arrowText.setString(ssArrow.str());
+
+				// Update the score text
+				ssScore << "Score:" << score;
+				scoreText.setString(ssScore.str());
+
+				// Update the high score text
+				ssHiScore << "Hi Score:" << hiScore;
+				hiScoreText.setString(ssHiScore.str());
+
+				// Update the wave
+				ssWave << "Wave:" << wave;
+				waveNumberText.setString(ssWave.str());
+
+				// Update the high score text
+				ssJellosAlive << "Jellos:" << numJellosAlive;
+				jellosRemainingText.setString(ssJellosAlive.str());
+
+				framesSinceLastHUDUpdate = 0;
+			}// End HUD update
 			
 		}// End updating the scene
 		
@@ -452,6 +594,16 @@ int main() {
 			
 			window.draw(tileBackground, &textureBackground);
 			
+			// Draw the pick-ups, if currently spawned
+			if (arrowPickup.isSpawned())
+			{
+				window.draw(arrowPickup.getSprite());
+			}
+			if (healthPickup.isSpawned())
+			{
+				window.draw(healthPickup.getSprite());
+			}
+			
 			// Draw the Jello!
 			for (int i = 0; i < numJellos; i++)
 			{
@@ -470,33 +622,39 @@ int main() {
 			// Draw the player
 			window.draw(player.getSprite());
 			
-			// Draw the pick-ups, if currently spawned
-			if (ammoPickup.isSpawned())
-			{
-				window.draw(ammoPickup.getSprite());
-			}
-			if (healthPickup.isSpawned())
-			{
-				window.draw(healthPickup.getSprite());
-			}
-			
 			//Draw the crosshair
 			window.draw(spriteCrosshair);
+			
+			// Switch to the HUD view
+			window.setView(hudView);
+
+			// Draw all the HUD elements
+			window.draw(spriteArrowIcon);
+			window.draw(arrowText);
+			window.draw(scoreText);
+			window.draw(hiScoreText);
+			window.draw(healthBar);
+			window.draw(waveNumberText);
+			window.draw(jellosRemainingText);
 		}
 
 		if (state == State::LEVELING_UP)
 		{
-			//window.clear();
+			window.draw(spriteGameOver);
+			window.draw(levelUpText);
 		}
 
 		if (state == State::PAUSED)
 		{
-			//window.clear();
+			window.draw(pausedText);
 		}
 
 		if (state == State::GAME_OVER)
 		{
-			//window.clear();
+			window.draw(spriteGameOver);
+			window.draw(gameOverText);
+			window.draw(scoreText);
+			window.draw(hiScoreText);
 		}
 
 		window.display();

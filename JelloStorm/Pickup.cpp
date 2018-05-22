@@ -23,7 +23,7 @@ Pickup::Pickup(int type)
 			"graphics/arrow_pickup.png"));
 
 		// How much is pickup worth
-		m_Value = AMMO_START_VALUE;
+		m_Value = ARROW_START_VALUE;
 	}
 
 	m_Sprite.setOrigin(25, 25);
@@ -119,7 +119,7 @@ void Pickup::upgrade()
 	}
 	else
 	{
-		m_Value += (AMMO_START_VALUE * .5);
+		m_Value += (ARROW_START_VALUE * .5);
 	}
 
 	// Make them more frequent and last longer

@@ -8,7 +8,7 @@ class Pickup
 private:
 	//Start value for health pickups
 	const int HEALTH_START_VALUE = 50;
-	const int AMMO_START_VALUE = 12;
+	const int ARROW_START_VALUE = 12;
 	const int START_WAIT_TIME = 10;
 	const int START_SECONDS_TO_LIVE = 5;
 
@@ -22,7 +22,7 @@ private:
 	int m_Value;
 
 	// What type of pickup is this? 
-	// 1 = health, 2 = ammo
+	// 1 = health, 2 = arrow
 	int m_Type;
 
 	// Handle spawning and disappearing
