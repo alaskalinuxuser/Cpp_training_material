@@ -6,8 +6,8 @@ Jello* createHorde(int numJellos, IntRect arena)
 {
 	Jello* jellos = new Jello[numJellos];
 
-	int maxY = arena.height + 100;
-	int minY = arena.top - 100;
+	int maxY = arena.height - 100;
+	int minY = arena.top + 100;
 	int maxX = arena.width - 100;
 	int minX = arena.left + 100;
 
