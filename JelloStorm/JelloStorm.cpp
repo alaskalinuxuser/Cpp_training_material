@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <sstream>
+#include <iostream>
 #include <SFML/Audio.hpp>
 #include <Player.h>
 #include <JelloStorm.h>
@@ -475,7 +476,8 @@ int main() {
 				// Delete the previously allocated memory (if it exists)
 				delete[] jellos;
 				jellos = createHorde(numJellos, arena);
-				numJellosAlive = numJellos;
+				 
+				 numJellosAlive = numJellos;
 				
 				// Reset the clock so there isn't a frame jump
 				clock.restart();
@@ -518,11 +520,16 @@ int main() {
 			mainView.setCenter(player.getCenter());
 			
 			// Loop through each Jello and update them
+			
+			numJellosAlive = 0;
+			
 			for (int i = 0; i < numJellos; i++)
 			{
 				if (jellos[i].isAlive())
 				{
 					jellos[i].update(dt.asSeconds(), playerPosition);
+					
+					numJellosAlive++;
 				}
 			}
 			
