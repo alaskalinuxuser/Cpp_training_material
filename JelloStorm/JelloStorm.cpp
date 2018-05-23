@@ -7,6 +7,7 @@
 #include <Arrow.h>
 #include <Pickup.h>
 #include <cmath>
+#include <fstream>
 
 // Declare the functions....
 
@@ -41,7 +42,7 @@ int main() {
 	View mainView(FloatRect(0, 0, resolution.x, resolution.y));
 
 	// Time control
-    Clock clock;
+	Clock clock;
 
 	// Total runtime of Playing state.
 	Time gameTimeTotal;
@@ -93,7 +94,7 @@ int main() {
 	
 	// For the home/game over screen
 	Sprite spriteGameOver;
-	Texture textureGameOver = TextureHolder::GetTexture("graphics/background.png");
+	Texture textureGameOver = TextureHolder::GetTexture("graphics/background_full.png");
 	spriteGameOver.setTexture(textureGameOver);
 	spriteGameOver.setPosition(0, 0);
 
@@ -135,7 +136,7 @@ int main() {
 	std::stringstream levelUpStream;
 	levelUpStream <<
 		"1 - Increased rate of fire" <<
-		"\n2 - Increased clip size(next reload)" <<
+		"\n2 - Increased quiver size(next reload)" <<
 		"\n3 - Increased max health" <<
 		"\n4 - Increased run speed" <<
 		"\n5 - More and better health pickups" <<
@@ -155,6 +156,14 @@ int main() {
 	scoreText.setCharacterSize(35);
 	scoreText.setColor(Color::White);
 	scoreText.setPosition(20, 0);
+	
+	// Load the high score from a text file/
+	std::ifstream inputFile("gamedata/scores.txt");
+	if (inputFile.is_open())
+	{
+		inputFile >> hiScore;
+		inputFile.close();
+	}
 
 	// Hi Score
 	Text hiScoreText;
@@ -172,7 +181,7 @@ int main() {
 	jellosRemainingText.setCharacterSize(35);
 	jellosRemainingText.setColor(Color::White);
 	jellosRemainingText.setPosition(resolution.x - 300, resolution.y - 100);
-	jellosRemainingText.setString("Jellos: 100");
+	jellosRemainingText.setString("Jellos: ");
 
 	// Wave number
 	int wave = 0;
@@ -190,13 +199,55 @@ int main() {
 		
 	// When did we last update the HUD?
 	int framesSinceLastHUDUpdate = 0;
-
+	// What time was the last update
+	Time timeSinceLastUpdate;
 	// How often (in frames) should we update the HUD
-	int fpsMeasurementFrameInterval = 1000;
+	int fpsMeasurementFrameInterval = 50;
 	
-    while (window.isOpen()) {
-		
-		
+	// Prepare the hit sound
+	SoundBuffer hitBuffer;
+	hitBuffer.loadFromFile("sound/hit.wav");
+	Sound hit;
+	hit.setBuffer(hitBuffer);
+
+	// Prepare the splat sound
+	SoundBuffer splatBuffer;
+	splatBuffer.loadFromFile("sound/splat.wav");
+	sf::Sound splat;
+	splat.setBuffer(splatBuffer);
+
+	// Prepare the shoot sound
+	SoundBuffer shootBuffer;
+	shootBuffer.loadFromFile("sound/shoot.wav");
+	Sound shoot;
+	shoot.setBuffer(shootBuffer);
+
+	// Prepare the reload sound
+	SoundBuffer reloadBuffer;
+	reloadBuffer.loadFromFile("sound/reload.wav");
+	Sound reload;
+	reload.setBuffer(reloadBuffer);
+
+	// Prepare the failed sound
+	SoundBuffer reloadFailedBuffer;
+	reloadFailedBuffer.loadFromFile("sound/reload_failed.wav");
+	Sound reloadFailed;
+	reloadFailed.setBuffer(reloadFailedBuffer);
+
+	// Prepare the powerup sound
+	SoundBuffer powerupBuffer;
+	powerupBuffer.loadFromFile("sound/powerup.wav");
+	Sound powerup;
+	powerup.setBuffer(powerupBuffer);
+
+	// Prepare the pickup sound
+	SoundBuffer pickupBuffer;
+	pickupBuffer.loadFromFile("sound/pickup.wav");
+	Sound pickup;
+	pickup.setBuffer(pickupBuffer);
+
+	// The main game loop
+	while (window.isOpen()) {
 		/* 
 		 * 
 		 *  Detect input.
@@ -234,6 +285,18 @@ int main() {
 					state == State::GAME_OVER)
 				{
 					state = State::LEVELING_UP;
+					wave = 0;
+					score = 0;
+
+					// Prepare the stats for next game
+					currentArrow = 0;
+					arrowsSpare = 24;
+					arrowsInQuiver = 6;
+					quiverSize = 6;
+					fireRate = 1;
+
+					// Reset the player's stats
+					player.resetPlayerStats();
 				}
 
 				if (state == State::PLAYING)
@@ -246,16 +309,19 @@ int main() {
 							// Plenty of bullets. Reload.
 							arrowsInQuiver = quiverSize;
 							arrowsSpare -= quiverSize;
+							reload.play();
 						}
 						else if (arrowsSpare > 0)
 						{
 							// Only few bullets left
 							arrowsInQuiver = arrowsSpare;
 							arrowsSpare = 0;
+							reload.play();
 						}
 						else
 						{
 							// play a sound...
+							reloadFailed.play();
 						}
 				}
 			}
@@ -345,43 +411,55 @@ int main() {
 			// Handle the player levelling up
 			if (event.key.code == Keyboard::Num1)
 			{
+				// Increase fire rate
+				fireRate++;
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num2)
 			{
+				// Increase clip size
+				quiverSize += quiverSize;
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num3)
 			{
+				// Increase health
+				player.upgradeHealth();
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num4)
 			{
+				// Increase speed
+				player.upgradeSpeed();
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num5)
 			{
+				healthPickup.upgrade();
 				state = State::PLAYING;
 			}
 
 			if (event.key.code == Keyboard::Num6)
 			{
+				arrowPickup.upgrade();
 				state = State::PLAYING;
 			}
 			
 			if (state == State::PLAYING)
 			{			
-				// Prepare the next level
-				arena.width = 500;
-				arena.height = 500;
+				// Increase the wave number
+				wave++;
+				// Prepare thelevel
+				arena.width = 500 + (wave*100);
+				arena.height = 500 + (wave*100);
 				arena.left = 0;
 				arena.top = 0;
 
-				// We will modify this line of code later
+				// Set the tile size.
 				int tileSize = createBackground(tileBackground, arena);
 
 				// Spawn the player in the middle of the arena
@@ -392,7 +470,7 @@ int main() {
 				arrowPickup.setArena(arena);
 
 				// Make some Jello!
-				numJellos = 10;
+				numJellos = 5 * wave;
 
 				// Delete the previously allocated memory (if it exists)
 				delete[] jellos;
@@ -473,7 +551,7 @@ int main() {
 						if (arrows[i].getPosition().intersects
 							(jellos[j].getPosition()))
 						{
-							// Stop the bullet
+							// Stop the arrow
 							arrows[i].stop();
 
 							// Register the hit and see if it was a kill
@@ -487,12 +565,15 @@ int main() {
 
 								numJellosAlive--;
 
-								// When all the zombies are dead (again)
+								// When all the jellos are dead (again)
 								if (numJellosAlive == 0) {
 									state = State::LEVELING_UP;
 								}
 							}
 
+							// Make a splat sound
+							splat.play();
+							
 						}
 					}
 
@@ -508,13 +589,18 @@ int main() {
 
 					if (player.hit(gameTimeTotal))
 					{
-						// More here later
+						// Play hit sound
+						hit.play();
 					}
 
 					if (player.getHealth() <= 0)
 					{
 						state = State::GAME_OVER;
 
+						std::ofstream outputFile("gamedata/scores.txt");
+						outputFile << hiScore;
+						outputFile.close();
+						
 					}
 				}
 			}// End player touched
@@ -524,6 +610,8 @@ int main() {
 				(healthPickup.getPosition()) && healthPickup.isSpawned())
 			{
 				player.increaseHealthLevel(healthPickup.gotIt());
+				// Play a sound
+				pickup.play();
 
 			}
 
@@ -532,12 +620,17 @@ int main() {
 				(arrowPickup.getPosition()) && arrowPickup.isSpawned())
 			{
 				arrowsSpare += arrowPickup.gotIt();
+				// Play a sound
+				pickup.play();
 
 			}
 			
 			// size up the health bar
 			healthBar.setSize(Vector2f(player.getHealth() * 3, 70));
 
+			// Increment the amount of time since the last HUD update
+			timeSinceLastUpdate += dt;
+			
 			// Increment the number of frames since the last HUD calculation
 			framesSinceLastHUDUpdate++;
 			// Calculate FPS every fpsMeasurementFrameInterval frames
@@ -572,6 +665,7 @@ int main() {
 				jellosRemainingText.setString(ssJellosAlive.str());
 
 				framesSinceLastHUDUpdate = 0;
+				timeSinceLastUpdate = Time::Zero;
 			}// End HUD update
 			
 		}// End updating the scene
@@ -660,9 +754,6 @@ int main() {
 		window.display();
 		
     }
-	
-	// Delete the previously allocated memory (if it exists)
-	delete[] jellos; // Clean up is always a good idea.
     
     return 0;
 }

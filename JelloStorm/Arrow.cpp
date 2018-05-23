@@ -45,8 +45,8 @@ void Arrow::shoot(float startX, float startY,
 
 	// Finally, assign the results to the
 	// member variables
-	//m_XTarget = targetX;
-	//m_YTarget = targetY;
+	m_XTarget = targetX;
+	m_YTarget = targetY;
 
 	// Set a max range of 1000 pixels
 	float range = 1000;

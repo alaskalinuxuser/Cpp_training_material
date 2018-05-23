@@ -19,7 +19,13 @@ Player::Player()
 	
 	// Set the center of the sprite so it can rotate.
 	m_Sprite.setOrigin(25, 25);
-	
+}
+
+void Player::resetPlayerStats()
+{
+	m_Speed = START_SPEED;
+	m_Health = START_HEALTH;
+	m_MaxHealth = START_HEALTH;
 }
 
 void Player::spawn(IntRect arena, Vector2f resolution, int tileSize)

@@ -12,7 +12,6 @@ private:
 
 	// What each arrow looks like
 	RectangleShape m_ArrowShape;
-	//m_ArrowShape.setFillColor(Color(100, 250, 50));
 
 	// Is this arrow currently whizzing through the air
 	bool m_InFlight = false;
