@@ -21,7 +21,7 @@ int main() {
 	
 	// What is the game state?
 	enum class State {
-		PAUSED, LEVELING_UP, GAME_OVER, PLAYING, DEAD
+		PAUSED, LEVELING_UP, GAME_OVER, DEAD, PLAYING
 	};
 	
 	// We will start with the game over state.
@@ -29,8 +29,6 @@ int main() {
 	
 	// Find the screen resolution
 	Vector2f resolution;
-	//resolution.x = 800;
-	//resolution.y = 600;
 	resolution.x = VideoMode::getDesktopMode().width;
 	resolution.y = VideoMode::getDesktopMode().height;
 
@@ -156,10 +154,10 @@ int main() {
 	std::stringstream levelUpStream;
 	levelUpStream <<
 		"Choose an option:" <<
-		"\n1 - Increased rate of fire" <<
-		"\n2 - Increased quiver size(next reload)" <<
+		"\n1 - Faster rate of fire" <<
+		"\n2 - Larger quiver size(next reload)" <<
 		"\n3 - Increased max health" <<
-		"\n4 - Increased run speed" <<
+		"\n4 - Faster running speed" <<
 		"\n5 - More and better health pickups" <<
 		"\n6 - More and better arrow pickups";
 	levelUpText.setString(levelUpStream.str());
@@ -292,8 +290,8 @@ int main() {
 					state = State::PAUSED;
 				}
 				
-				// Pause game.
-				if (event.key.code == Keyboard::Return &&
+				// Restart game.
+				else if (event.key.code == Keyboard::Return &&
 					state == State::DEAD)
 				{
 					state = State::GAME_OVER;
@@ -366,6 +364,7 @@ int main() {
 		// Handle controls while playing
 		if (state == State::PLAYING)
 		{
+				
 			// Handle the pressing and releasing of the WASD keys
 			if (Keyboard::isKeyPressed(Keyboard::W))
 			{
@@ -482,8 +481,8 @@ int main() {
 				// Increase the wave number
 				wave++;
 				// Prepare thelevel
-				arena.width = 600 + (wave*100);
-				arena.height = 600 + (wave*100);
+				arena.width = 700 + (wave*100);
+				arena.height = 700 + (wave*100);
 				arena.left = 0;
 				arena.top = 0;
 
