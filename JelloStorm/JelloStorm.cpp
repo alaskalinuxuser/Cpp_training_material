@@ -478,6 +478,14 @@ int main() {
 				jellos = createHorde(numJellos, arena);
 				 
 				 numJellosAlive = numJellos;
+				 
+				 if (!jellos[numJellosAlive - (numJellosAlive/5*4)].isAlive())
+				 {
+					 delete[] jellos;
+					 jellos = createHorde(numJellos, arena);
+				 
+					 numJellosAlive = numJellos;
+				 }
 				
 				// Reset the clock so there isn't a frame jump
 				clock.restart();
@@ -529,6 +537,9 @@ int main() {
 				{
 					jellos[i].update(dt.asSeconds(), playerPosition);
 					
+					// Used for debugging
+					// std::cout << i;
+					
 					numJellosAlive++;
 				}
 			}
@@ -572,10 +583,6 @@ int main() {
 
 								numJellosAlive--;
 
-								// When all the jellos are dead (again)
-								if (numJellosAlive == 0) {
-									state = State::LEVELING_UP;
-								}
 							}
 
 							// Make a splat sound
@@ -586,6 +593,11 @@ int main() {
 
 				}
 			}// End jello been hit by an arrow.
+			
+			// When all the jellos are dead (again)
+								if (numJellosAlive == 0) {
+									state = State::LEVELING_UP;
+								}
 
 			 // Have any jellos touched the archer?			
 			for (int i = 0; i < numJellos; i++)

@@ -34,7 +34,7 @@ private:
 	float m_Health;
 
 	// Is it still alive?
-	bool m_Alive;
+	bool m_Alive = true;
 
 	// Public prototypes go here	
 public:
