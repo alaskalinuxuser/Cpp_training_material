@@ -21,7 +21,7 @@ int main() {
 	
 	// What is the game state?
 	enum class State {
-		PAUSED, LEVELING_UP, GAME_OVER, PLAYING
+		PAUSED, LEVELING_UP, GAME_OVER, PLAYING, DEAD
 	};
 	
 	// We will start with the game over state.
@@ -95,8 +95,9 @@ int main() {
 	
 	// For the home/game over screen
 	Sprite spriteGameOver;
-	Texture textureGameOver = TextureHolder::GetTexture("graphics/background_full.png");
+	Texture textureGameOver = TextureHolder::GetTexture("graphics/background_stretch.png");
 	spriteGameOver.setTexture(textureGameOver);
+	spriteGameOver.setScale(resolution.x/341, resolution.y/206);
 	spriteGameOver.setPosition(0, 0);
 
 	// Create a view for the HUD
@@ -119,14 +120,32 @@ int main() {
 	pausedText.setColor(Color::White);
 	pausedText.setPosition(resolution.x/4, resolution.y/4);
 	pausedText.setString("Press Enter \nto continue");
+	
+	//Dead
+	Text YouDiedText;
+	YouDiedText.setFont(font);
+	YouDiedText.setCharacterSize(55);
+	YouDiedText.setColor(Color::White);
+	YouDiedText.setPosition(resolution.x/4, resolution.y/4);
+	YouDiedText.setString("You are dead! \nPress Enter to continue.");
 
 	// Game Over
 	Text gameOverText;
 	gameOverText.setFont(font);
-	gameOverText.setCharacterSize(55);
+	gameOverText.setCharacterSize(45);
 	gameOverText.setColor(Color::White);
-	gameOverText.setPosition(resolution.x/4, resolution.y/4);
-	gameOverText.setString("Press Enter to play");
+	gameOverText.setPosition(resolution.x/5, resolution.y/4);
+	std::stringstream gameOverStream;
+	gameOverStream <<
+		"Press Enter to play!" <<
+		"\nW - Up" <<
+		"\nA - Left" <<
+		"\nS - Down" <<
+		"\nD - Right" <<
+		"\nR - Reload quiver from inventory" <<
+		"\nEnter - Pause the game" <<
+		"\nMouse - Click to shoot";
+	gameOverText.setString(gameOverStream.str());
 
 	// Levelling up
 	Text levelUpText;
@@ -136,7 +155,8 @@ int main() {
 	levelUpText.setPosition(150, 250);
 	std::stringstream levelUpStream;
 	levelUpStream <<
-		"1 - Increased rate of fire" <<
+		"Choose an option:" <<
+		"\n1 - Increased rate of fire" <<
 		"\n2 - Increased quiver size(next reload)" <<
 		"\n3 - Increased max health" <<
 		"\n4 - Increased run speed" <<
@@ -271,6 +291,13 @@ int main() {
 				{
 					state = State::PAUSED;
 				}
+				
+				// Pause game.
+				if (event.key.code == Keyboard::Return &&
+					state == State::DEAD)
+				{
+					state = State::GAME_OVER;
+				}
 
 				// Resume playing.
 				else if (event.key.code == Keyboard::Return &&
@@ -391,7 +418,7 @@ int main() {
 					arrows[currentArrow].shoot(
 						player.getCenter().x, player.getCenter().y,
 						mouseWorldPosition.x, mouseWorldPosition.y);
-
+					shoot.play();
 					currentArrow++;
 					if (currentArrow > 99)
 					{
@@ -455,8 +482,8 @@ int main() {
 				// Increase the wave number
 				wave++;
 				// Prepare thelevel
-				arena.width = 500 + (wave*100);
-				arena.height = 500 + (wave*100);
+				arena.width = 600 + (wave*100);
+				arena.height = 600 + (wave*100);
 				arena.left = 0;
 				arena.top = 0;
 
@@ -479,6 +506,8 @@ int main() {
 				 
 				 numJellosAlive = numJellos;
 				 
+				 // A catch all to make sure at least 80% of the jellos were created.
+				 // If not, try again.
 				 if (!jellos[numJellosAlive - (numJellosAlive/5*4)].isAlive())
 				 {
 					 delete[] jellos;
@@ -614,7 +643,7 @@ int main() {
 
 					if (player.getHealth() <= 0)
 					{
-						state = State::GAME_OVER;
+						state = State::DEAD;
 
 						std::ofstream outputFile("gamedata/scores.txt");
 						outputFile << hiScore;
@@ -755,6 +784,61 @@ int main() {
 		{
 			window.draw(spriteGameOver);
 			window.draw(levelUpText);
+		}
+		
+		if (state == State::DEAD)
+		{
+			window.clear();
+
+			// set the mainView to be displayed in the window
+			// And draw everything related to it
+			window.setView(mainView);
+			
+			window.draw(tileBackground, &textureBackground);
+			
+			// Draw the pick-ups, if currently spawned
+			if (arrowPickup.isSpawned())
+			{
+				window.draw(arrowPickup.getSprite());
+			}
+			if (healthPickup.isSpawned())
+			{
+				window.draw(healthPickup.getSprite());
+			}
+			
+			// Draw the Jello!
+			for (int i = 0; i < numJellos; i++)
+			{
+				window.draw(jellos[i].getSprite());
+			}
+			
+			// Draw the arrows.
+			for (int i = 0; i < 100; i++)
+			{
+				if (arrows[i].isInFlight())
+				{
+					window.draw(arrows[i].getShape());
+				}
+			}
+
+			// Draw the player
+			window.draw(player.getSprite());
+			
+			//Draw the crosshair
+			window.draw(spriteCrosshair);
+			
+			// Switch to the HUD view
+			window.setView(hudView);
+
+			// Draw all the HUD elements
+			window.draw(spriteArrowIcon);
+			window.draw(arrowText);
+			window.draw(scoreText);
+			window.draw(hiScoreText);
+			window.draw(healthBar);
+			window.draw(waveNumberText);
+			window.draw(jellosRemainingText);
+			window.draw(YouDiedText);
 		}
 
 		if (state == State::PAUSED)
