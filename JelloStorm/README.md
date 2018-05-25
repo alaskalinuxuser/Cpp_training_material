@@ -4,10 +4,10 @@
 
 # Gameplay
 
-You are an archer who was traveling through a grassy plain. Suddenly, a horde of ferocious jello monsters storm you! Eat grapes to preserve your strength! Find more arrows to shoot at your enemy!
+You are an archer who was traveling through a grassy plain. Suddenly, a horde of poisonous jello monsters storm you! Eat grapes to preserve your strength! Find more arrows to shoot at your enemy!
 
 wasd - move the archer.
-r - reload the quiver with arrows.
+r - reload the quiver with arrows from inventory.
 ESC - exit the game.
 ENTER - Pause/resume.
 Mouse Right click - shoot an arrow.
@@ -16,9 +16,9 @@ Number - Input durring level up.
 
 # Background info
 A directory of my work while participating in a class about learning how to program in C++.
-All of my work is licensed under the Apache2.0, however, some of the class artwork and sounds may not be opensourced.
+All of my work is licensed under the Apache2.0, including the artwork and sounds in this game.
 
-To build these games, you need libsfml installed on your Linux system. Then, in each game folder, run the ./build.sh file to build the source.
+To build this game, you need libsfml installed on your Linux system. Then, in this game folder, run the ./build.sh file to build the source.
 
 # A note about the build.sh script
 
