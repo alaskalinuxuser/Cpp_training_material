@@ -881,6 +881,9 @@ int main() {
 		window.display();
 		
     }
+    // Delete the previously allocated memory (if it exists)
+	delete[] jellos;
+	delete[] poison;
     
     return 0;
 }
