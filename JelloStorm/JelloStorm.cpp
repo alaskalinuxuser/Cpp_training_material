@@ -146,8 +146,7 @@ int main() {
 		"\nD - Right" <<
 		"\nR - Reload quiver from inventory" <<
 		"\nEnter - Pause the game" <<
-		"\nMouse - Left Click to shoot" <<
-		"\n      - Right Click to reload";
+		"\nMouse - Left Click to shoot";
 	gameOverText.setString(gameOverStream.str());
 
 	// Levelling up
