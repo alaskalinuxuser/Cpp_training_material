@@ -15,6 +15,7 @@
 
 g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 TextureHolder.cpp -o TextureHolder.o
 g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 Player.cpp -o Player.o
+g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 Poison.cpp -o Poison.o
 g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 Arrow.cpp -o Arrow.o
 g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 Jello.cpp -o Jello.o
 g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 Pickup.cpp -o Pickup.o
@@ -23,7 +24,7 @@ g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 CreateHorde.cpp -o CreateHorde.o
 g++ -I./  -Wall -ansi -Wextra -g -c -std=c++14 CreateBackground.cpp -o CreateBackground.o
 
 
-g++ TextureHolder.o Player.o Arrow.o Jello.o Pickup.o JelloStorm.o  CreateHorde.o CreateBackground.o -o JelloStorm-app -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
+g++ TextureHolder.o Player.o Poison.o Arrow.o Jello.o Pickup.o JelloStorm.o  CreateHorde.o CreateBackground.o -o JelloStorm-app -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio
 
 ./JelloStorm-app
 

@@ -50,12 +50,16 @@ public:
 
 	// Return a rectangle that is the position in the world
 	FloatRect getPosition();
+	
+	// Return coordinate position
+	Vector2f getCoordPosition();
 
 	// Get a copy of the sprite to draw
 	Sprite getSprite();
 
 	// Update the jello each frame
-	void update(float elapsedTime, Vector2f playerLocation);
+	void update(float elapsedTime, Vector2f playerLocation,
+	 int specificJello, IntRect arena);
 };
 
 

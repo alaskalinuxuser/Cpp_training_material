@@ -3,6 +3,7 @@
 #include <iostream>
 #include <SFML/Audio.hpp>
 #include <Player.h>
+#include <Poison.h>
 #include <JelloStorm.h>
 #include <TextureHolder.h>
 #include <Arrow.h>
@@ -65,6 +66,9 @@ int main() {
 	int numJellos;
 	int numJellosAlive;
 	Jello* jellos = nullptr;
+	
+	// and Poison!
+	Poison* poison = nullptr;
 	
 	// 100 Arrows should do
 	Arrow arrows[100];
@@ -142,7 +146,8 @@ int main() {
 		"\nD - Right" <<
 		"\nR - Reload quiver from inventory" <<
 		"\nEnter - Pause the game" <<
-		"\nMouse - Click to shoot";
+		"\nMouse - Left Click to shoot" <<
+		"\n      - Right Click to reload";
 	gameOverText.setString(gameOverStream.str());
 
 	// Levelling up
@@ -402,7 +407,7 @@ int main() {
 				player.stopRight();
 			}
 			
-			// Fire an arrow
+			// Fire an arrow with mouse click.
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 			{
 
@@ -428,7 +433,7 @@ int main() {
 					arrowsInQuiver--;
 				}
 
-			}// End fire an arrow.
+			}// End fire an arrow.					
 
 		}// End WASD while playing
 
@@ -502,6 +507,15 @@ int main() {
 				// Delete the previously allocated memory (if it exists)
 				delete[] jellos;
 				jellos = createHorde(numJellos, arena);
+				
+				delete[] poison;
+				poison = new Poison[numJellos];
+				
+				for (int p = 0; p < numJellos; p++)
+				{
+					// Spawn the new jello into the array
+					poison[p].spawn(jellos[p].getCoordPosition());
+				}
 				 
 				 numJellosAlive = numJellos;
 				 
@@ -563,12 +577,22 @@ int main() {
 			{
 				if (jellos[i].isAlive())
 				{
-					jellos[i].update(dt.asSeconds(), playerPosition);
+					jellos[i].update(dt.asSeconds(), playerPosition,
+					 i, arena);
+					 
+					 // And update the poison ring.
+					 poison[i].update(jellos[i].getCoordPosition());
 					
 					// Used for debugging
 					// std::cout << i;
 					
 					numJellosAlive++;
+				} else {
+					// Since the Jello is dead, remove it's poison ring.
+					Vector2f offVect;
+					offVect.x = -1000000;
+					offVect.y = -1000000;
+					poison[i].update(offVect);
 				}
 			}
 			
@@ -749,6 +773,7 @@ int main() {
 			for (int i = 0; i < numJellos; i++)
 			{
 				window.draw(jellos[i].getSprite());
+				window.draw(poison[i].getSprite());
 			}
 			
 			// Draw the arrows.
@@ -809,6 +834,7 @@ int main() {
 			for (int i = 0; i < numJellos; i++)
 			{
 				window.draw(jellos[i].getSprite());
+				window.draw(poison[i].getSprite());
 			}
 			
 			// Draw the arrows.

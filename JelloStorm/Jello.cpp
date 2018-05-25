@@ -85,6 +85,10 @@ FloatRect Jello::getPosition()
 	return m_Sprite.getGlobalBounds();
 }
 
+Vector2f Jello::getCoordPosition()
+{
+	return m_Sprite.getPosition();
+}
 
 Sprite Jello::getSprite()
 {
@@ -92,7 +96,7 @@ Sprite Jello::getSprite()
 }
 
 void Jello::update(float elapsedTime,
-	Vector2f playerLocation)
+	Vector2f playerLocation, int specificJello, IntRect arena)
 {
 	float playerX = playerLocation.x;
 	float playerY = playerLocation.y;
@@ -120,6 +124,32 @@ void Jello::update(float elapsedTime,
 	{
 		m_Position.y = m_Position.y -
 			m_Speed * elapsedTime;
+	}
+	
+	if (specificJello % 2 == 0) {
+		// Give the jello an opportunity to randomly teleport!
+		// The if statement checks if it is even number.
+		// If it is, do this:
+		
+		// Find the min/max of the arena area
+		int maxY = arena.height - 50;
+		int minY = arena.top + 50;
+		int maxX = arena.width - 50;
+		int minX = arena.left + 50;
+	
+		// Generate our random number
+		srand((int)time(0) * specificJello);
+		int side = (rand() % 10);
+				
+		switch (side)
+		{
+		case 0:
+			// left
+			m_Position.x = (rand() % maxX) + minX;
+			m_Position.y = (rand() % maxY) + minY;
+			break;
+		}
+	
 	}
 
 	// Move the sprite
