@@ -1,6 +1,6 @@
 # JelloStorm
 
-![ScreenShot](https://github.com/alaskalinuxuser/Cpp_training_material/blob/master/JelloStorm/graphics/sample.png)
+![ScreenShot](https://github.com/alaskalinuxuser/Cpp_training_material/blob/master/JelloStorm/graphics/Newsample.png)
 
 # Gameplay
 
